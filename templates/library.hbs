@@ -1,0 +1,106 @@
+<div class="ac-library-body">
+
+  {{#if update}}
+    <div class="ac-update-banner">
+      <i class="fa-solid fa-arrows-rotate ac-update-icon"></i>
+      <span class="ac-update-text">{{updateLabel}}</span>
+      <button type="button" class="ac-button ac-button-quiet" data-action="changelog">
+        {{localize "animation-control.UpdateCheck.ViewChanges"}}
+      </button>
+    </div>
+  {{/if}}
+
+  <div class="ac-tabs">
+    {{#each tabs}}
+      <button type="button" class="ac-tab {{this.tone}}{{#if this.active}} is-active{{/if}}"
+              data-tab="{{this.value}}">
+        <i class="fa-solid {{this.icon}}"></i>{{this.label}}
+      </button>
+    {{/each}}
+
+    <div class="ac-tab-actions">
+      <input type="search" class="ac-search" data-filter="search" value="{{filter.search}}"
+             placeholder="{{localize 'animation-control.Filter.SearchPlaceholder'}}">
+      <select data-filter="kind">
+        {{#each kindOptions}}
+          <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+        {{/each}}
+      </select>
+      <span class="ac-actions-divider"></span>
+      <button type="button" class="ac-icon-button" data-action="collapseAll"
+              data-tooltip="{{localize 'animation-control.Library.CollapseAll'}}">
+        <i class="fa-solid fa-angles-up"></i>
+      </button>
+      <button type="button" class="ac-icon-button" data-action="expandAll"
+              data-tooltip="{{localize 'animation-control.Library.ExpandAll'}}">
+        <i class="fa-solid fa-angles-down"></i>
+      </button>
+      <span class="ac-actions-divider"></span>
+      <button type="button" class="ac-icon-button" data-action="scan" {{#if job}}disabled{{/if}}
+              data-tooltip="{{localize 'animation-control.Library.Scan'}}">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+      <button type="button" class="ac-icon-button ac-icon-positive" data-action="prepareAll" {{#if job}}disabled{{/if}}
+              data-tooltip="{{localize 'animation-control.Library.PrepareAll'}}">
+        <i class="fa-solid fa-layer-group"></i>
+      </button>
+    </div>
+  </div>
+
+  {{#if job}}
+    <div class="ac-job">
+      <div class="ac-job-head">
+        <span class="ac-job-label">{{job.label}}</span>
+        <span class="ac-job-detail">{{job.detail}}</span>
+        <button type="button" class="ac-button ac-button-quiet" data-action="cancel">
+          {{localize "animation-control.Common.Cancel"}}
+        </button>
+      </div>
+      <div class="ac-job-track"><div class="ac-job-fill" style="width: {{job.progress}}%"></div></div>
+    </div>
+  {{/if}}
+
+  <div class="ac-library-count">
+    <span class="ac-block-title">{{localize "animation-control.Library.Count" shown=shown total=total}}</span>
+  </div>
+
+  <div class="ac-library-list">
+    {{#each groups}}
+      <div class="ac-group{{#if this.collapsed}} is-collapsed{{/if}}"
+           style="--ac-group-c: {{this.tone}};" data-folder="{{this.folder}}">
+        <div class="ac-group-header">
+          <i class="fa-solid fa-chevron-down ac-group-caret"></i>
+          <span class="ac-group-name" title="{{this.folder}}">{{this.label}}</span>
+          <span class="ac-group-count">{{this.count}}</span>
+        </div>
+        <div class="ac-group-body">
+          {{#each this.rows}}
+            <div class="ac-row ac-state-{{this.state}}" data-path="{{this.path}}">
+              <div class="ac-row-top">
+                <span class="ac-row-name" title="{{this.path}}">{{this.name}}</span>
+                <span class="ac-row-meta">{{this.meta}}</span>
+                <span class="ac-pill ac-pill-{{this.state}}">{{this.stateLabel}}</span>
+                <div class="ac-row-actions">
+                  <button type="button" class="ac-icon-button ac-icon-positive" data-action="prepareOne"
+                          data-tooltip="{{localize 'animation-control.Library.Prepare'}}">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  </button>
+                  <button type="button" class="ac-icon-button ac-icon-danger" data-action="forget"
+                          data-tooltip="{{localize 'animation-control.Library.Forget'}}">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+              {{#if this.error}}
+                <span class="ac-row-error" title="{{this.error}}">{{this.error}}</span>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    {{else}}
+      <p class="ac-empty">{{localize "animation-control.Library.Empty"}}</p>
+    {{/each}}
+  </div>
+
+</div>

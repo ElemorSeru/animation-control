@@ -1,0 +1,36 @@
+{
+  "id": "animation-control",
+  "title": "GM Tools: Animation Control",
+  "description": "Control how animated tiles, tokens and scene backgrounds play. Set a play-in, a looping hold and a play-out on any animated file, find clean loop points automatically, and add fade or scale transitions. Works with WebM, MP4, GIF, animated WebP and APNG.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12.328",
+    "verified": "14"
+  },
+  "authors": [
+    {
+      "name": "Elemor",
+      "patreon": "https://www.patreon.com/Elemor",
+      "flags": {}
+    }
+  ],
+  "esmodules": [
+    "scripts/module-init.js"
+  ],
+  "styles": [
+    "styles/animation-control.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "persistentStorage": true,
+  "url": "https://github.com/ElemorSeru/animation-control",
+  "manifest": "https://github.com/ElemorSeru/animation-control/releases/latest/download/module.json",
+  "download": "https://github.com/ElemorSeru/animation-control/releases/latest/download/module.zip",
+  "license": "LICENSE.txt",
+  "readme": "README.md"
+}

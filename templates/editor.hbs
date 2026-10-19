@@ -1,0 +1,488 @@
+<div class="ac-editor-body">
+
+  {{#unless prepared}}
+    <div class="ac-blank">
+      <i class="fa-solid fa-wand-magic-sparkles ac-blank-icon"></i>
+      <p class="ac-blank-title">{{localize "animation-control.Editor.NotPrepared"}}</p>
+      <p class="ac-blank-hint">{{localize "animation-control.Editor.NotPreparedHint"}}</p>
+      {{#if busy}}
+        <div class="ac-job-track"><div class="ac-job-fill" style="width: {{busy.progress}}%"></div></div>
+        <p class="ac-blank-hint">{{busy.label}}</p>
+      {{else}}
+        <button type="button" class="ac-button ac-button-positive" data-action="analyze">
+          <i class="fa-solid fa-play"></i> {{localize "animation-control.Editor.Analyze"}}
+        </button>
+      {{/if}}
+    </div>
+  {{else}}
+
+    <div class="ac-editor-main">
+      <div class="ac-editor-stage">
+
+        <div class="ac-stage-row">
+          <div class="ac-preview-wrap">
+            <canvas class="ac-preview" data-preview width="320" height="320"></canvas>
+          </div>
+
+          <div class="ac-stage-side">
+            <div class="ac-seam-block">
+              <span class="ac-block-title">{{localize "animation-control.Editor.SeamTitle"}}</span>
+              <div class="ac-seam-row">
+                <canvas class="ac-seam-preview" data-seam-preview width="120" height="120"></canvas>
+                <div class="ac-seam-meter">
+                  <div class="ac-seam-dots">
+                    {{#each seamDots}}
+                      <span class="ac-seam-dot{{#if this.filled}} is-filled{{/if}}"></span>
+                    {{/each}}
+                  </div>
+                  <span class="ac-block-hint">{{seamLabel}}</span>
+                </div>
+              </div>
+              <p class="ac-seam-note">{{localize "animation-control.Editor.SeamNote"}}</p>
+            </div>
+
+            <div class="ac-stage-options">
+              <label class="ac-inline-label">
+                {{localize "animation-control.Editor.Background"}}
+                <select data-control="background">
+                  <option value="dark">{{localize "animation-control.Editor.BackgroundDark"}}</option>
+                  <option value="light">{{localize "animation-control.Editor.BackgroundLight"}}</option>
+                  <option value="checker">{{localize "animation-control.Editor.BackgroundChecker"}}</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-timeline-bar">
+          <div class="ac-transport" data-transport></div>
+          <span class="ac-bar-spacer"></span>
+
+          <span class="ac-block-hint ac-trim-readout">
+            {{localize "animation-control.Editor.Plays"}} {{trimFrom}} &rarr; {{trimTo}}
+          </span>
+          {{#if hasTrim}}
+            <button type="button" class="ac-icon-button" data-action="clearTrim"
+                    data-tooltip="{{localize 'animation-control.Editor.ClearTrim'}}">
+              <i class="fa-solid fa-arrows-left-right-to-line"></i>
+            </button>
+          {{/if}}
+
+          <span class="ac-actions-divider"></span>
+
+          <button type="button" class="ac-add ac-tone-pass" data-action="addLoop">
+            <i class="fa-solid fa-plus"></i> {{localize "animation-control.Editor.AddLoop"}}
+          </button>
+          <button type="button" class="ac-add ac-tone-pass" data-action="addPause">
+            <i class="fa-solid fa-pause"></i> {{localize "animation-control.Editor.AddPause"}}
+          </button>
+          <button type="button" class="ac-button ac-button-quiet" data-action="findLoops">
+            <i class="fa-solid fa-wand-sparkles"></i> {{localize "animation-control.Editor.FindLoops"}}
+          </button>
+
+          <span class="ac-actions-divider"></span>
+
+          <div class="ac-zoom">
+            <button type="button" class="ac-icon-button" data-action="zoomOut"
+                    data-tooltip="{{localize 'animation-control.Editor.ZoomOut'}}">
+              <i class="fa-solid fa-magnifying-glass-minus"></i>
+            </button>
+            <span class="ac-zoom-label">{{zoomLabel}}</span>
+            <button type="button" class="ac-icon-button" data-action="zoomIn"
+                    data-tooltip="{{localize 'animation-control.Editor.ZoomIn'}}">
+              <i class="fa-solid fa-magnifying-glass-plus"></i>
+            </button>
+            <button type="button" class="ac-icon-button" data-action="zoomReset"
+                    data-tooltip="{{localize 'animation-control.Editor.ZoomFit'}}">
+              <i class="fa-solid fa-arrows-left-right-to-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="ac-timeline-wrap">
+          <div class="ac-timeline" data-timeline>
+            <div class="ac-timeline-row">
+              <span class="ac-timeline-label">{{localize "animation-control.Editor.LaneTime"}}</span>
+              <div class="ac-ruler" data-ruler></div>
+            </div>
+            <div class="ac-timeline-row">
+              <span class="ac-timeline-label">{{localize "animation-control.Editor.LaneFrames"}}</span>
+              <div class="ac-frames">
+                <div class="ac-filmstrip" data-filmstrip></div>
+                <div class="ac-trim" data-trim></div>
+              </div>
+            </div>
+            <div class="ac-timeline-row">
+              <span class="ac-timeline-label">{{localize "animation-control.Editor.LaneLoops"}}</span>
+              <div class="ac-lane" data-lane></div>
+            </div>
+            {{#if hasAudio}}
+              <div class="ac-timeline-row">
+                <span class="ac-timeline-label">{{localize "animation-control.Editor.LaneSound"}}</span>
+                <div class="ac-lane ac-wave-lane" data-wave-lane>
+                  <svg class="ac-wave" data-wave preserveAspectRatio="none"></svg>
+                </div>
+              </div>
+            {{/if}}
+            <div class="ac-timeline-overlay">
+              <div class="ac-playhead" data-playhead></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ac-editor-detail">
+        <div class="ac-editor-side">
+          <div class="ac-section ac-tone-jump{{#if collapsed.clip}} is-collapsed{{/if}}">
+            <button type="button" class="ac-section-head" data-action="toggleSection" data-section="clip">
+              <i class="fa-solid fa-chevron-down ac-section-caret"></i>
+              <span>{{localize "animation-control.Editor.WholeClip"}}</span>
+            </button>
+            <div class="ac-section-body">
+              <div class="ac-inspector-grid">
+                <div class="ac-field ac-field-wide">
+                  <label>{{localize "animation-control.Editor.StartBehavior"}}</label>
+                  <select data-profile="playOn">
+                    {{#each starts}}
+                      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                <div class="ac-field">
+                  <label>{{localize "animation-control.Editor.WhenItEnds"}}</label>
+                  <select data-profile="ended">
+                    {{#each endings}}
+                      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                {{#if showEndedGoto}}
+                  <div class="ac-field">
+                    <label>{{localize "animation-control.Editor.EndedGotoTarget"}}</label>
+                    <select data-profile="endedGotoId">
+                      {{#each endedGotoTargets}}
+                        <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                      {{/each}}
+                    </select>
+                  </div>
+                {{/if}}
+                <div class="ac-field">
+                  <label>{{localize "animation-control.Editor.Volume"}}</label>
+                  <input type="range" data-profile="volume" min="0" max="100" step="1" value="{{volume}}"
+                         {{#if soundOff}}disabled{{/if}}>
+                </div>
+                <div class="ac-field ac-field-wide">
+                  <label>{{localize "animation-control.Editor.AudioFades"}}</label>
+                  <div class="ac-check-row">
+                    <label class="ac-inline-label">
+                      <input type="checkbox" data-profile-flag="audioIn" {{#if audioIn}}checked{{/if}}
+                             {{#if soundOff}}disabled{{/if}}>
+                      {{localize "animation-control.Editor.FadeIn"}}
+                    </label>
+                    <label class="ac-inline-label">
+                      <input type="checkbox" data-profile-flag="audioOut" {{#if audioOut}}checked{{/if}}
+                             {{#if soundOff}}disabled{{/if}}>
+                      {{localize "animation-control.Editor.FadeOut"}}
+                    </label>
+                    {{#if soundOff}}
+                      <span class="ac-block-hint ac-warn">{{soundReason}}</span>
+                    {{else}}
+                      <span class="ac-block-hint">{{localize "animation-control.Editor.AudioFadeHint"}}</span>
+                    {{/if}}
+                  </div>
+                </div>
+                <div class="ac-field">
+                  <label>{{localize "animation-control.Editor.Desync"}}</label>
+                  <select data-profile="desync">
+                    {{#each spreads}}
+                      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                <div class="ac-field">
+                  <label>{{localize "animation-control.Editor.Direction"}}</label>
+                  <select data-profile="reversed">
+                    {{#each directions}}
+                      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                <div class="ac-field">
+                  <label>{{localize "animation-control.Editor.Speed"}}</label>
+                  <select data-profile="rate">
+                    {{#each rates}}
+                      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                {{#if showIdle}}
+                  <div class="ac-field ac-field-wide">
+                    <label>{{localize "animation-control.Editor.IdleLook"}}</label>
+                    <select data-profile="idle">
+                      {{#each idles}}
+                        <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                      {{/each}}
+                    </select>
+                    <span class="ac-block-hint">{{localize "animation-control.Editor.IdleHint"}}</span>
+                  </div>
+                {{/if}}
+                <div class="ac-field ac-field-wide">
+                  <label>{{localize "animation-control.Editor.Enter"}}</label>
+                  <div class="ac-check-row">
+                    <label class="ac-inline-label">
+                      <input type="checkbox" data-clip-transition="enter.fade" {{#if clipEnter.fade}}checked{{/if}}>
+                      {{localize "animation-control.Editor.FadeIn"}}
+                    </label>
+                    <label class="ac-inline-label">
+                      <input type="checkbox" data-clip-transition="enter.scale" {{#if clipEnter.scale}}checked{{/if}}>
+                      {{localize "animation-control.Editor.Grow"}}
+                    </label>
+                    <label class="ac-inline-label ac-duration">
+                      {{localize "animation-control.Editor.DurationMs"}}
+                      <input type="number" data-clip-duration="enter" min="50" step="50" value="{{clipEnter.ms}}">
+                    </label>
+                  </div>
+                </div>
+
+                <div class="ac-field ac-field-wide">
+                  <label>{{localize "animation-control.Editor.Exit"}}</label>
+                  <div class="ac-check-row">
+                    <label class="ac-inline-label">
+                      <input type="checkbox" data-clip-transition="exit.fade" {{#if clipExit.fade}}checked{{/if}}>
+                      {{localize "animation-control.Editor.FadeOut"}}
+                    </label>
+                    <label class="ac-inline-label">
+                      <input type="checkbox" data-clip-transition="exit.scale" {{#if clipExit.scale}}checked{{/if}}>
+                      {{localize "animation-control.Editor.Shrink"}}
+                    </label>
+                    <label class="ac-inline-label ac-duration">
+                      {{localize "animation-control.Editor.DurationMs"}}
+                      <input type="number" data-clip-duration="exit" min="50" step="50" value="{{clipExit.ms}}">
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {{#if candidates.length}}
+            <div class="ac-section ac-tone-pass{{#if collapsed.candidates}} is-collapsed{{/if}}">
+              <button type="button" class="ac-section-head" data-action="toggleSection" data-section="candidates">
+                <i class="fa-solid fa-chevron-down ac-section-caret"></i>
+                <span>{{localize "animation-control.Editor.Candidates"}}</span>
+              </button>
+              <div class="ac-section-body">
+                <div class="ac-thumbs">
+                  {{#each candidates}}
+                    <div class="ac-thumb-pair">
+                      <button type="button" class="ac-thumb ac-candidate" data-action="applyCandidate"
+                              data-candidate="{{this.index}}"
+                              data-tooltip="{{localize 'animation-control.Editor.CandidateApply'}}">
+                        <canvas class="ac-thumb-canvas" data-candidate-canvas="{{this.index}}"
+                                width="64" height="48"></canvas>
+                        <span class="ac-thumb-num">{{this.percent}}%</span>
+                      </button>
+                      <button type="button" class="ac-icon-button ac-thumb-add ac-candidate"
+                              data-action="addCandidate" data-candidate="{{this.index}}"
+                              data-tooltip="{{localize 'animation-control.Editor.CandidateAdd'}}">
+                        <i class="fa-solid fa-plus"></i>
+                      </button>
+                    </div>
+                  {{/each}}
+                </div>
+              </div>
+            </div>
+          {{/if}}
+        </div>
+
+        <div class="ac-inspector">
+          {{#if selected}}
+            <div class="ac-inspector-head">
+              <span class="ac-inspector-swatch ac-tone-{{selectedTone}}"></span>
+              <span class="ac-inspector-title">{{selectedTitle}}</span>
+              <button type="button" class="ac-icon-button ac-icon-danger" data-action="deleteLoop"
+                      data-tooltip="{{localize 'animation-control.Editor.DeleteLoop'}}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+
+            <div class="ac-inspector-grid">
+              <div class="ac-field ac-field-wide">
+                <label>{{#if isPause}}{{localize "animation-control.Editor.PauseName"}}{{else}}{{localize "animation-control.Editor.LoopName"}}{{/if}}</label>
+                <input type="text" data-field="name" value="{{selected.name}}"
+                       placeholder="{{#if isPause}}{{localize 'animation-control.Editor.PauseNamePlaceholder'}}{{else}}{{localize 'animation-control.Editor.LoopNamePlaceholder'}}{{/if}}">
+              </div>
+
+              {{#if isPause}}
+              <p class="ac-block-hint ac-field-wide">{{localize "animation-control.Editor.PauseHint"}}</p>
+              {{else}}
+              <div class="ac-field">
+                <label>{{localize "animation-control.Editor.Mode"}}</label>
+                <select data-field="mode">
+                  {{#each modes}}
+                    <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                  {{/each}}
+                </select>
+              </div>
+
+              <div class="ac-field">
+                <label>{{localize "animation-control.Editor.Seam"}}</label>
+                <select data-field="seam">
+                  {{#each seams}}
+                    <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                  {{/each}}
+                </select>
+                <span class="ac-block-hint">{{localize "animation-control.Editor.SeamHint"}}</span>
+              </div>
+
+              <p class="ac-block-hint ac-field-wide{{#if loopTooShort}} ac-warn{{/if}}">
+                {{localize "animation-control.Editor.LoopLength" frames=loopFrames}}
+                {{#if loopTooShort}} {{localize "animation-control.Editor.LoopTooShort"}}{{/if}}
+              </p>
+              {{/if}}
+
+              <div class="ac-inspector-sep"></div>
+
+              <div class="ac-field">
+                <label>{{localize "animation-control.Editor.Engage"}}</label>
+                <select data-field="engage">
+                  {{#each engages}}
+                    <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                  {{/each}}
+                </select>
+              </div>
+
+              {{#if showHold}}
+                <div class="ac-field">
+                  <label>{{localize "animation-control.Editor.HoldFor"}}</label>
+                  <select data-field="holdMode">
+                    {{#each holds}}
+                      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                {{#if showHoldCount}}
+                  <div class="ac-field">
+                    <label>{{localize "animation-control.Editor.HoldCount"}}</label>
+                    <input type="number" data-field="holdCount" min="1" step="1"
+                           value="{{holdCount}}">
+                  </div>
+                {{/if}}
+              {{/if}}
+
+              <div class="ac-field">
+                <label>{{localize "animation-control.Editor.Release"}}</label>
+                <select data-field="release">
+                  {{#each releases}}
+                    <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                  {{/each}}
+                </select>
+              </div>
+
+              {{#if showGoto}}
+                <div class="ac-field">
+                  <label>{{localize "animation-control.Editor.GotoTarget"}}</label>
+                  <select data-field="gotoId">
+                    {{#each gotoTargets}}
+                      <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+              {{/if}}
+
+              {{#unless isPause}}
+              <div class="ac-inspector-sep"></div>
+
+              <div class="ac-field">
+                <label>{{localize "animation-control.Editor.LoopSound"}}</label>
+                <select data-loop-audio="mode" {{#if soundOff}}disabled{{/if}}>
+                  {{#each loopAudioModes}}
+                    <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+                  {{/each}}
+                </select>
+              </div>
+              <div class="ac-field">
+                <label>{{localize "animation-control.Editor.LoopSoundLevel"}}</label>
+                <input type="range" data-loop-audio="level" min="0" max="100" step="1" value="{{loopAudioLevel}}"
+                       {{#if soundOff}}disabled{{/if}}>
+              </div>
+              {{#if showSustain}}
+                <div class="ac-field ac-field-wide">
+                  <div class="ac-check-row">
+                    <label class="ac-inline-label">
+                      {{localize "animation-control.Editor.Crossfade"}}
+                      <input type="number" data-loop-audio="crossfadeMs" min="0" step="5" value="{{loopCrossfade}}"
+                             {{#if soundOff}}disabled{{/if}}>
+                    </label>
+                    <button type="button" class="ac-button ac-button-quiet" data-action="resetSustain"
+                            {{#if soundOff}}disabled{{/if}}>
+                      {{localize "animation-control.Editor.SustainReset"}}
+                    </button>
+                    {{#if sustainWarning}}
+                      <span class="ac-block-hint ac-warn">{{localize "animation-control.Editor.SustainWarning"}}</span>
+                    {{else}}
+                      <span class="ac-block-hint">{{sustainLabel}}</span>
+                    {{/if}}
+                  </div>
+                </div>
+              {{/if}}
+              {{/unless}}
+
+              <div class="ac-inspector-sep"></div>
+
+              <div class="ac-field ac-field-wide">
+                <label>{{localize "animation-control.Editor.EnteringLoop"}}</label>
+                <div class="ac-check-row">
+                  <label class="ac-inline-label">
+                    <input type="checkbox" data-loop-transition="enter.fade" {{#if selected.enter.fade}}checked{{/if}}>
+                    {{localize "animation-control.Editor.Fade"}}
+                  </label>
+                  <label class="ac-inline-label">
+                    <input type="checkbox" data-loop-transition="enter.scale" {{#if selected.enter.scale}}checked{{/if}}>
+                    {{localize "animation-control.Editor.Grow"}}
+                  </label>
+                  <label class="ac-inline-label ac-duration">
+                    {{localize "animation-control.Editor.DurationMs"}}
+                    <input type="number" data-loop-duration="enter" min="50" step="50" value="{{selected.enter.ms}}">
+                  </label>
+                </div>
+              </div>
+
+              <div class="ac-field ac-field-wide">
+                <label>{{localize "animation-control.Editor.LeavingLoop"}}</label>
+                <div class="ac-check-row">
+                  <label class="ac-inline-label">
+                    <input type="checkbox" data-loop-transition="exit.fade" {{#if selected.exit.fade}}checked{{/if}}>
+                    {{localize "animation-control.Editor.Fade"}}
+                  </label>
+                  <label class="ac-inline-label">
+                    <input type="checkbox" data-loop-transition="exit.scale" {{#if selected.exit.scale}}checked{{/if}}>
+                    {{localize "animation-control.Editor.Shrink"}}
+                  </label>
+                  <label class="ac-inline-label ac-duration">
+                    {{localize "animation-control.Editor.DurationMs"}}
+                    <input type="number" data-loop-duration="exit" min="50" step="50" value="{{selected.exit.ms}}">
+                  </label>
+                </div>
+              </div>
+            </div>
+          {{else}}
+            <p class="ac-empty">{{localize "animation-control.Editor.NoLoops"}}</p>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <footer class="ac-editor-footer">
+      <span class="ac-footer-spacer"></span>
+      <button type="button" class="ac-button ac-button-danger" data-action="reset">
+        {{localize "animation-control.Editor.Reset"}}
+      </button>
+      <button type="button" class="ac-button ac-button-positive" data-action="save">
+        <i class="fa-solid fa-floppy-disk"></i> {{localize "animation-control.Editor.Save"}}
+      </button>
+    </footer>
+
+  {{/unless}}
+
+</div>

@@ -1,0 +1,174 @@
+<div class="ac-scene">
+
+  <div class="ac-scene-head">
+    <div class="ac-scene-title" data-tooltip="{{localize 'animation-control.Controller.SceneHint'}}">
+      <i class="fa-solid fa-map"></i>
+      <b>{{sceneName}}</b>
+      {{#if levelName}}<span>{{levelName}}</span>{{/if}}
+    </div>
+    <div class="ac-scene-tools">
+      <div class="ac-scene-seg">
+        <button type="button" class="{{#unless selectedOnly}}ac-on{{/unless}}" data-action="filter" data-filter="all"
+                data-tooltip="{{localize 'animation-control.Controller.FilterAllHint'}}">
+          <i class="fa-solid fa-layer-group ac-seg-icon"></i><span class="ac-tool-label">{{localize "animation-control.Controller.FilterAll"}}</span>
+        </button>
+        <button type="button" class="{{#if selectedOnly}}ac-on{{/if}}" data-action="filter" data-filter="selected"
+                data-tooltip="{{localize 'animation-control.Controller.FilterSelectedHint'}}">
+          <i class="fa-solid fa-arrow-pointer ac-seg-icon"></i><span class="ac-tool-label">{{localize "animation-control.Controller.FilterSelected"}}</span>
+        </button>
+      </div>
+      <button type="button" class="ac-icon-button{{#if stills}} ac-icon-on{{/if}}" data-action="stills"
+              data-tooltip="{{localize 'animation-control.Controller.StillsHint'}}">
+        <i class="fa-solid fa-image"></i><span class="ac-tool-label">{{localize "animation-control.Controller.Stills"}}</span>
+      </button>
+      {{#if allCollapsed}}
+        <button type="button" class="ac-icon-button" data-action="foldAll"
+                data-tooltip="{{localize 'animation-control.Controller.ExpandAll'}}">
+          <i class="fa-solid fa-angles-down"></i>
+        </button>
+      {{else}}
+        <button type="button" class="ac-icon-button" data-action="foldAll"
+                data-tooltip="{{localize 'animation-control.Controller.CollapseAll'}}">
+          <i class="fa-solid fa-angles-up"></i>
+        </button>
+      {{/if}}
+      <span class="ac-scene-sep"></span>
+      <button type="button" class="ac-icon-button" data-action="pauseAll"
+              data-tooltip="{{localize 'animation-control.Controller.PauseAll'}}">
+        <i class="fa-solid fa-circle-pause"></i><span class="ac-tool-label">{{localize "animation-control.Controller.PauseAllShort"}}</span>
+      </button>
+      <button type="button" class="ac-icon-button" data-action="resumeAll"
+              data-tooltip="{{localize 'animation-control.Controller.ResumeAll'}}">
+        <i class="fa-solid fa-circle-play"></i><span class="ac-tool-label">{{localize "animation-control.Controller.ResumeAllShort"}}</span>
+      </button>
+    </div>
+  </div>
+
+  {{#if hasSelection}}
+    <div class="ac-scene-sel">
+      <span class="ac-scene-sel-label"><i class="fa-solid fa-arrow-pointer"></i>{{selectionLabel}}</span>
+      <div class="ac-scene-sel-buttons">
+        {{#each shared}}
+          <button type="button" class="ac-icon-button{{#if this.active}} ac-icon-on{{/if}}" data-action="sharedButton"
+                  data-btn="{{this.button}}" data-tooltip="{{this.tooltip}}" aria-label="{{this.tooltip}}">
+            <i class="fa-solid {{this.icon}}"></i>
+          </button>
+        {{/each}}
+      </div>
+      <button type="button" class="ac-icon-button" data-action="clearSelection"
+              data-tooltip="{{localize 'animation-control.Controller.ClearSelection'}}">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="ac-scene-chips">
+        {{#each chips}}
+          <button type="button" class="ac-scene-chip ac-type-{{this.type}} ac-state-{{this.tone}}" data-action="goTo"
+                  data-key="{{this.key}}" data-tooltip="{{localize 'animation-control.Controller.GoTo'}}">
+            <span class="ac-chip-shape"></span><span class="ac-chip-name">{{this.name}}</span><span class="ac-chip-tone"></span><i class="fa-solid fa-arrow-down"></i>
+          </button>
+        {{/each}}
+      </div>
+    </div>
+  {{/if}}
+
+  <div class="ac-scene-body">
+    {{#if hasRows}}
+      <div class="ac-scene-groups">
+        {{#each groups}}
+          <section class="ac-scene-group ac-type-{{this.type}}{{#if this.collapsed}} is-collapsed{{/if}}" data-group="{{this.type}}">
+            <header class="ac-scene-group-head" data-action="toggleGroup">
+              <i class="fa-solid fa-chevron-down ac-scene-chevron"></i>
+              <span class="ac-scene-group-icon"><i class="fa-solid {{this.icon}}"></i></span>
+              <span class="ac-scene-group-name">{{this.label}}</span>
+              <span class="ac-scene-count">{{this.count}}</span>
+              {{#if this.selectedCount}}
+                <span class="ac-scene-selcount">{{localize "animation-control.Controller.SelectedCount" count=this.selectedCount}}</span>
+              {{/if}}
+              <span class="ac-scene-spacer"></span>
+              <button type="button" class="ac-icon-button" data-action="groupPause"
+                      data-tooltip="{{localize 'animation-control.Controller.GroupPause'}}">
+                <i class="fa-solid fa-circle-pause"></i>
+              </button>
+              <button type="button" class="ac-icon-button" data-action="groupResume"
+                      data-tooltip="{{localize 'animation-control.Controller.GroupResume'}}">
+                <i class="fa-solid fa-circle-play"></i>
+              </button>
+            </header>
+
+            {{#unless this.collapsed}}
+              <div class="ac-scene-rows">
+                {{#each this.rows}}
+                  <div class="ac-scene-row ac-state-{{this.tone}}{{#if this.selected}} is-selected{{/if}}{{#if this.still}} is-still{{/if}}{{#if this.hidden}} is-hidden{{/if}}"
+                       data-index="{{this.index}}" data-key="{{this.key}}" data-action="select">
+                    <div class="ac-scene-row-head">
+                      <span class="ac-scene-thumb" data-thumb="{{this.index}}"></span>
+                      <div class="ac-scene-text">
+                        <div class="ac-scene-name">
+                          <i class="fa-solid fa-arrow-pointer ac-scene-selglyph"></i>
+                          <span title="{{this.path}}">{{this.name}}</span>
+                          {{#if this.hidden}}
+                            <i class="fa-solid fa-eye-slash ac-scene-flag" data-tooltip="{{localize 'animation-control.Controller.HiddenToken'}}"></i>
+                          {{/if}}
+                        </div>
+                        {{#if this.sub}}<div class="ac-scene-sub">{{this.sub}}</div>{{/if}}
+                      </div>
+                      {{#if this.still}}
+                        <span class="ac-pill ac-pill-idle ac-pill-top">{{localize "animation-control.Controller.Still"}}</span>
+                      {{else}}
+                        <span class="ac-pill ac-pill-{{this.tone}} ac-pill-top" data-tooltip="{{this.stateLabel}}">{{this.shortLabel}}</span>
+                      {{/if}}
+                      <div class="ac-scene-actions">
+                        {{#if this.canCenter}}
+                          <button type="button" class="ac-icon-button" data-action="centerOn"
+                                  data-tooltip="{{localize 'animation-control.Controller.CenterOn'}}">
+                            <i class="fa-solid fa-crosshairs"></i>
+                          </button>
+                        {{/if}}
+                        {{#if this.canApply}}
+                          <button type="button" class="ac-icon-button" data-action="applyToRest"
+                                  data-tooltip="{{localize 'animation-control.Controller.ApplyToRest'}}">
+                            <i class="fa-solid fa-clone"></i>
+                          </button>
+                        {{/if}}
+                        {{#unless this.still}}
+                          <button type="button" class="ac-icon-button" data-action="configure"
+                                  data-tooltip="{{localize 'animation-control.Controller.Configure'}}">
+                            <i class="fa-solid fa-sliders"></i>
+                          </button>
+                        {{/unless}}
+                      </div>
+                    </div>
+
+                    <div class="ac-scene-buttons{{#unless this.buttons.length}} is-empty{{/unless}}">
+                      {{#each this.buttons}}
+                        <button type="button" class="ac-icon-button{{#if this.active}} ac-icon-on{{/if}}" data-action="rowButton"
+                                data-btn="{{this.button}}" data-tooltip="{{this.tooltip}}" aria-label="{{this.tooltip}}">
+                          <i class="fa-solid {{this.icon}}"></i>
+                        </button>
+                      {{/each}}
+                      {{#if this.loopName}}<span class="ac-scene-loop">{{this.loopName}}</span>{{/if}}
+                      {{#if this.still}}
+                        <span class="ac-pill ac-pill-idle ac-pill-low">{{localize "animation-control.Controller.Still"}}</span>
+                      {{else}}
+                        <span class="ac-pill ac-pill-{{this.tone}} ac-pill-low" data-tooltip="{{this.stateLabel}}">{{this.shortLabel}}</span>
+                      {{/if}}
+                    </div>
+                  </div>
+                {{/each}}
+              </div>
+            {{/unless}}
+          </section>
+        {{/each}}
+      </div>
+    {{else}}
+      <p class="ac-block-hint ac-scene-empty">{{emptyHint}}</p>
+    {{/if}}
+  </div>
+
+  <div class="ac-scene-foot">
+    <span>{{animatedCount}}</span>
+    {{#if stillCount}}<span>{{stillCount}}</span>{{/if}}
+    <span class="ac-scene-spacer"></span>
+    <span>{{layerLabel}}</span>
+  </div>
+
+</div>
